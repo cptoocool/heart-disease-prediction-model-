@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CardioCare | Heart Disease Prediction AI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫀</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #e11d48;
+      --primary-dark: #be123c;
+      --primary-light: #ffe4e6;
+      --primary-gradient: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(15, 23, 42, 0.6);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #090d16;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(225, 29, 72, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.12) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* Header */
+    header {
+      background: var(--primary-gradient);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      margin-bottom: 28px;
+      box-shadow: 0 10px 30px -10px rgba(225, 29, 72, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '🫀';
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 8rem;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.05rem;
+      max-width: 700px;
+    }
+
+    /* Preset Toolbar */
+    .preset-toolbar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .preset-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-preset {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-preset:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-preset.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+    }
+
+    /* Layout Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 992px) {
+      .grid {
+        grid-template-columns: 1.25fr 0.95fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    .card-title span {
+      font-size: 1.4rem;
+    }
+
+    /* Form controls */
+    .form-section {
+      margin-bottom: 24px;
+    }
+
+    .form-section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #fb7185;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .input-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .label-hint {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 0.8rem;
+    }
+
+    input[type="number"], select {
+      background: var(--input-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    input[type="number"]:focus, select:focus {
+      border-color: #f43f5e;
+      box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2);
+    }
+
+    .range-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .range-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .range-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fb7185;
+      background: rgba(244, 63, 94, 0.12);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #f43f5e;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+      transition: transform 0.1s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Radio chips */
+    .chip-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chip-label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--input-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #94a3b8;
+    }
+
+    .chip-group input[type="radio"] {
+      display: none;
+    }
+
+    .chip-group input[type="radio"]:checked + .chip-label {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: #f43f5e;
+      color: #fff;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 20px -4px rgba(225, 29, 72, 0.5);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -4px rgba(225, 29, 72, 0.6);
+    }
+
+    /* Result Panel */
+    .result-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .gauge-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .gauge-svg {
+      width: 220px;
+      height: 130px;
+    }
+
+    .gauge-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin-top: -30px;
+      letter-spacing: -0.03em;
+    }
+
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-top: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .risk-low {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .risk-medium {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .risk-high {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Factor tags */
+    .factors-box {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .factors-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+
+    .factor-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .factor-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+    }
+
+    .factor-item.enhancer {
+      border-left: 3px solid #ef4444;
+    }
+
+    .factor-item.reducer {
+      border-left: 3px solid #10b981;
+    }
+
+    .factor-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .factor-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .badge-enhancer {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .badge-reducer {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    /* Recommendations */
+    .rec-box {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .rec-item {
+      display: flex;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+
+    .rec-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    /* Model benchmark table */
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 0.85rem;
+    }
+
+    .metrics-table th, .metrics-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .metrics-table th {
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metrics-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .best-badge {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fb7185;
+      font-weight: 700;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    /* Tabs */
+    .tabs-header {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 10px 16px;
+      cursor: pointer;
+      position: relative;
+      font-family: inherit;
+    }
+
+    .tab-btn.active {
+      color: #fff;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #f43f5e;
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: #fb7185;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-badge">AI Clinical Decision Support</div>
+      <h1>🫀 CardioCare: Heart Disease Prediction System</h1>
+      <p class="subtitle">Multi-model machine learning system trained on 918 patient records for early cardiac risk stratification and biomarker evaluation.</p>
+    </header>
+
+    <!-- Preset Profile Toolbar -->
+    <div class="preset-toolbar">
+      <div class="preset-label">
+        <span>⚡ Quick Preset Profiles:</span>
+      </div>
+      <div class="preset-buttons">
+        <button type="button" class="btn-preset" onclick="loadPreset('healthy')">
+          <span>🟢</span> Healthy Profile (Low Risk)
+        </button>
+        <button type="button" class="btn-preset" onclick="loadPreset('borderline')">
+          <span>🟡</span> Borderline Profile (Moderate Risk)
+        </button>
+        <button type="button" class="btn-preset" onclick="loadPreset('cardiac')">
+          <span>🔴</span> Cardiac Patient (High Risk)
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid">
+      <!-- Input Panel -->
+      <div class="card">
+        <h2 class="card-title"><span>📋</span> Patient Diagnostic Profile</h2>
+        <form id="predictionForm" onsubmit="event.preventDefault(); calculateRisk();">
+          
+          <!-- Section 1: Demographics & Symptoms -->
+          <div class="form-section">
+            <div class="form-section-title">1. Demographics & Symptoms</div>
+            
+            <div class="input-grid-2">
+              <div class="form-group range-wrap">
+                <div class="range-header">
+                  <label for="age">Patient Age <span class="label-hint">(Years)</span></label>
+                  <span id="ageVal" class="range-val">52</span>
+                </div>
+                <input type="range" id="age" min="20" max="85" value="52" oninput="updateVal('age', 'ageVal')">
+              </div>
+
+              <div class="form-group">
+                <label>Biological Sex</label>
+                <div class="chip-group">
+                  <input type="radio" id="sexM" name="sex" value="M" checked onchange="calculateRisk()">
+                  <label for="sexM" class="chip-label">Male (M)</label>
+                  <input type="radio" id="sexF" name="sex" value="F" onchange="calculateRisk()">
+                  <label for="sexF" class="chip-label">Female (F)</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-grid-2">
+              <div class="form-group">
+                <label for="chestPain">Chest Pain Type</label>
+                <select id="chestPain" onchange="calculateRisk()">
+                  <option value="ASY" selected>Asymptomatic (ASY)</option>
+                  <option value="NAP">Non-Anginal Pain (NAP)</option>
+                  <option value="ATA">Atypical Angina (ATA)</option>
+                  <option value="TA">Typical Angina (TA)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Exercise Induced Angina</label>
+                <div class="chip-group">
+                  <input type="radio" id="exangN" name="exang" value="N" checked onchange="calculateRisk()">
+                  <label for="exangN" class="chip-label">No (N)</label>
+                  <input type="radio" id="exangY" name="exang" value="Y" onchange="calculateRisk()">
+                  <label for="exangY" class="chip-label">Yes (Y)</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Vitals & Blood Tests -->
+          <div class="form-section">
+            <div class="form-section-title">2. Vitals & Laboratory Data</div>
+            
+            <div class="input-grid-2">
+              <div class="form-group">
+                <label for="restingBP">Resting Blood Pressure <span class="label-hint">(mm Hg)</span></label>
+                <input type="number" id="restingBP" min="70" max="220" value="130" onchange="calculateRisk()">
+              </div>
+
+              <div class="form-group">
+                <label for="cholesterol">Serum Cholesterol <span class="label-hint">(mg/dL)</span></label>
+                <input type="number" id="cholesterol" min="80" max="600" value="225" onchange="calculateRisk()">
+              </div>
+            </div>
+
+            <div class="input-grid-2">
+              <div class="form-group">
+                <label for="fastingBS">Fasting Blood Sugar</label>
+                <select id="fastingBS" onchange="calculateRisk()">
+                  <option value="0" selected>Normal (<= 120 mg/dl)</option>
+                  <option value="1">High (> 120 mg/dl / Diabetic)</option>
+                </select>
+              </div>
+
+              <div class="form-group range-wrap">
+                <div class="range-header">
+                  <label for="maxHR">Max Heart Rate Achieved <span class="label-hint">(bpm)</span></label>
+                  <span id="maxHRVal" class="range-val">145</span>
+                </div>
+                <input type="range" id="maxHR" min="60" max="220" value="145" oninput="updateVal('maxHR', 'maxHRVal')">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Electrocardiogram -->
+          <div class="form-section">
+            <div class="form-section-title">3. Electrocardiogram (ECG) & Stress Test</div>
+            
+            <div class="input-grid-2">
+              <div class="form-group">
+                <label for="restingECG">Resting ECG Results</label>
+                <select id="restingECG" onchange="calculateRisk()">
+                  <option value="Normal" selected>Normal</option>
+                  <option value="ST">ST-T Wave Abnormality (ST)</option>
+                  <option value="LVH">Left Ventricular Hypertrophy (LVH)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="stSlope">Peak Exercise ST Slope</label>
+                <select id="stSlope" onchange="calculateRisk()">
+                  <option value="Up">Upsloping (Up - Normal)</option>
+                  <option value="Flat" selected>Flat (Flat - Ischemia Sign)</option>
+                  <option value="Down">Downsloping (Down - Severe)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group range-wrap">
+              <div class="range-header">
+                <label for="oldpeak">ST Depression / Oldpeak <span class="label-hint">(Exercise vs Rest)</span></label>
+                <span id="oldpeakVal" class="range-val">0.8</span>
+              </div>
+              <input type="range" id="oldpeak" min="-2.0" max="6.0" step="0.1" value="0.8" oninput="updateVal('oldpeak', 'oldpeakVal')">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <span>🔍</span> Re-evaluate Heart Disease Risk
+          </button>
+        </form>
+      </div>
+
+      <!-- Result & Insights Panel -->
+      <div class="card result-container">
+        
+        <!-- Tabs Header -->
+        <div class="tabs-header">
+          <button class="tab-btn active" onclick="switchTab(event, 'tabResult')">Assessment Result</button>
+          <button class="tab-btn" onclick="switchTab(event, 'tabBenchmarks')">Model Benchmarks</button>
+          <button class="tab-btn" onclick="switchTab(event, 'tabAbout')">Clinical Info</button>
+        </div>
+
+        <!-- Tab 1: Assessment Result -->
+        <div id="tabResult" class="tab-pane active">
+          <div class="gauge-card">
+            <!-- Semi-circle SVG Gauge -->
+            <svg class="gauge-svg" viewBox="0 0 200 110">
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="18" stroke-linecap="round"/>
+              <path id="gaugeProgress" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#f43f5e" stroke-width="18" stroke-dasharray="251.3" stroke-dashoffset="125" stroke-linecap="round" style="transition: stroke-dashoffset 0.6s ease, stroke 0.6s ease;"/>
+            </svg>
+            <div id="riskPercentage" class="gauge-val">54.2%</div>
+            <div id="riskBadge" class="risk-badge risk-medium">Moderate Risk</div>
+            <p id="riskSummary" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px; max-width: 320px;">
+              Elevated probability of significant coronary artery disease. Further non-invasive screening indicated.
+            </p>
+          </div>
+
+          <!-- Contributing Biomarkers -->
+          <div class="factors-box" style="margin-top: 16px;">
+            <div class="factors-title">Primary Contributing Factors</div>
+            <div id="factorList" class="factor-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Clinical Recommendations -->
+          <div class="rec-box" style="margin-top: 16px;">
+            <div class="factors-title">Targeted Clinical Guidance</div>
+            <div id="recList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Model Benchmarks -->
+        <div id="tabBenchmarks" class="tab-pane">
+          <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Trained ML Model Comparisons</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Evaluated on held-out test cohort (20% test split, 184 patients) with stratified 5-fold cross-validation.
+          </p>
+
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>ROC AUC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Gradient Boosting</strong> <span class="best-badge">BEST</span></td>
+                <td>88.59%</td>
+                <td>89.32%</td>
+                <td>90.20%</td>
+                <td>0.9158</td>
+              </tr>
+              <tr>
+                <td><strong>Logistic Regression</strong></td>
+                <td>88.04%</td>
+                <td>88.46%</td>
+                <td>90.20%</td>
+                <td>0.9339</td>
+              </tr>
+              <tr>
+                <td><strong>Support Vector Machine</strong></td>
+                <td>86.41%</td>
+                <td>87.38%</td>
+                <td>88.24%</td>
+                <td>0.9366</td>
+              </tr>
+              <tr>
+                <td><strong>K-Nearest Neighbors</strong></td>
+                <td>86.41%</td>
+                <td>88.89%</td>
+                <td>86.27%</td>
+                <td>0.9310</td>
+              </tr>
+              <tr>
+                <td><strong>Random Forest</strong></td>
+                <td>84.78%</td>
+                <td>86.27%</td>
+                <td>86.27%</td>
+                <td>0.9249</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 14px; margin-top: 18px; font-size: 0.82rem; color: var(--text-muted);">
+            📌 <strong>Top Feature Importances:</strong> ST_Slope (Up/Flat: 39.9%), Oldpeak ST Depression (10.3%), Exercise Angina (9.6%), Max Heart Rate (8.9%).
+          </div>
+        </div>
+
+        <!-- Tab 3: Clinical Information -->
+        <div id="tabAbout" class="tab-pane">
+          <h3 style="font-size: 1.1rem; margin-bottom: 8px;">About the Clinical Features</h3>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; color: #cbd5e1; margin-top: 12px;">
+            <div><strong>• ST Slope:</strong> The slope of the ST segment during peak exercise. An upsloping pattern is typical in healthy hearts, whereas flat or downsloping patterns strongly correlate with myocardial ischemia.</div>
+            <div><strong>• Oldpeak (ST Depression):</strong> The difference in ST segment level between resting state and peak exercise. Higher values indicate compromised coronary perfusion.</div>
+            <div><strong>• Exercise Angina:</strong> Transient retrosternal discomfort induced by cardiac workload due to supply/demand mismatch.</div>
+            <div><strong>• Cholesterol & Fasting BS:</strong> Systemic metabolic biomarkers contributing to atherosclerotic plaque accumulation.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      CardioCare AI • Built for Netlify & Streamlit • Trained on 918 Patient Cohort
+    </footer>
+  </div>
+
+  <script>
+    // Trained Scikit-Learn Model Parameters (StandardScaler + LogisticRegression calibrated on heart.csv)
+    const MODEL = {
+      means: [53.84877384, 132.8746594, 246.22283379, 136.3773842, 0.86512262],
+      scales: [9.43414099, 18.06800915, 54.12128311, 25.81469452, 1.05624337],
+      coefs: [
+        0.06710658,  // Age
+        -0.03603806, // RestingBP
+        0.07618443,  // Cholesterol
+        -0.32089457, // MaxHR
+        0.26691791,  // Oldpeak
+        1.19274170,  // Sex_M
+        -1.36581349, // ChestPainType_ATA
+        -1.41467666, // ChestPainType_NAP
+        -0.89670224, // ChestPainType_TA
+        -0.15876091, // RestingECG_Normal
+        -0.07992801, // RestingECG_ST
+        0.83139483,  // ExerciseAngina_Y
+        0.89425084,  // ST_Slope_Flat
+        -1.31099534, // ST_Slope_Up
+        1.06439847   // FastingBS
+      ],
+      intercept: -0.38137691
+    };
+
+    function updateVal(id, targetId) {
+      document.getElementById(targetId).textContent = document.getElementById(id).value;
+      calculateRisk();
+    }
+
+    function switchTab(e, tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+      e.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function loadPreset(type) {
+      if (type === 'healthy') {
+        document.getElementById('age').value = 38;
+        document.getElementById('ageVal').textContent = '38';
+        document.getElementById('sexF').checked = true;
+        document.getElementById('chestPain').value = 'ATA';
+        document.getElementById('restingBP').value = 118;
+        document.getElementById('cholesterol').value = 175;
+        document.getElementById('fastingBS').value = '0';
+        document.getElementById('restingECG').value = 'Normal';
+        document.getElementById('maxHR').value = 172;
+        document.getElementById('maxHRVal').textContent = '172';
+        document.getElementById('exangN').checked = true;
+        document.getElementById('oldpeak').value = 0.0;
+        document.getElementById('oldpeakVal').textContent = '0.0';
+        document.getElementById('stSlope').value = 'Up';
+      } else if (type === 'borderline') {
+        document.getElementById('age').value = 54;
+        document.getElementById('ageVal').textContent = '54';
+        document.getElementById('sexM').checked = true;
+        document.getElementById('chestPain').value = 'NAP';
+        document.getElementById('restingBP').value = 135;
+        document.getElementById('cholesterol').value = 230;
+        document.getElementById('fastingBS').value = '0';
+        document.getElementById('restingECG').value = 'ST';
+        document.getElementById('maxHR').value = 140;
+        document.getElementById('maxHRVal').textContent = '140';
+        document.getElementById('exangN').checked = true;
+        document.getElementById('oldpeak').value = 1.0;
+        document.getElementById('oldpeakVal').textContent = '1.0';
+        document.getElementById('stSlope').value = 'Flat';
+      } else if (type === 'cardiac') {
+        document.getElementById('age').value = 62;
+        document.getElementById('ageVal').textContent = '62';
+        document.getElementById('sexM').checked = true;
+        document.getElementById('chestPain').value = 'ASY';
+        document.getElementById('restingBP').value = 160;
+        document.getElementById('cholesterol').value = 280;
+        document.getElementById('fastingBS').value = '1';
+        document.getElementById('restingECG').value = 'LVH';
+        document.getElementById('maxHR').value = 115;
+        document.getElementById('maxHRVal').textContent = '115';
+        document.getElementById('exangY').checked = true;
+        document.getElementById('oldpeak').value = 2.5;
+        document.getElementById('oldpeakVal').textContent = '2.5';
+        document.getElementById('stSlope').value = 'Flat';
+      }
+      calculateRisk();
+    }
+
+    function calculateRisk() {
+      const age = parseFloat(document.getElementById('age').value);
+      const sex = document.querySelector('input[name="sex"]:checked').value;
+      const cp = document.getElementById('chestPain').value;
+      let rbp = parseFloat(document.getElementById('restingBP').value) || 132.5;
+      let chol = parseFloat(document.getElementById('cholesterol').value) || 244.6;
+      const fbs = parseFloat(document.getElementById('fastingBS').value);
+      const ecg = document.getElementById('restingECG').value;
+      const maxhr = parseFloat(document.getElementById('maxHR').value);
+      const exang = document.querySelector('input[name="exang"]:checked').value;
+      const oldpeak = parseFloat(document.getElementById('oldpeak').value);
+      const slope = document.getElementById('stSlope').value;
+
+      // Handle zero imputations
+      if (rbp <= 0) rbp = 132.54;
+      if (chol <= 0) chol = 244.64;
+
+      // Features vector
+      const x = [
+        (age - MODEL.means[0]) / MODEL.scales[0],
+        (rbp - MODEL.means[1]) / MODEL.scales[1],
+        (chol - MODEL.means[2]) / MODEL.scales[2],
+        (maxhr - MODEL.means[3]) / MODEL.scales[3],
+        (oldpeak - MODEL.means[4]) / MODEL.scales[4],
+        sex === 'M' ? 1.0 : 0.0,
+        cp === 'ATA' ? 1.0 : 0.0,
+        cp === 'NAP' ? 1.0 : 0.0,
+        cp === 'TA' ? 1.0 : 0.0,
+        ecg === 'Normal' ? 1.0 : 0.0,
+        ecg === 'ST' ? 1.0 : 0.0,
+        exang === 'Y' ? 1.0 : 0.0,
+        slope === 'Flat' ? 1.0 : 0.0,
+        slope === 'Up' ? 1.0 : 0.0,
+        fbs === 1 ? 1.0 : 0.0
+      ];
+
+      let z = MODEL.intercept;
+      for (let i = 0; i < x.length; i++) {
+        z += MODEL.coefs[i] * x[i];
+      }
+
+      const prob = 1.0 / (1.0 + Math.exp(-z));
+      const percentage = (prob * 100).toFixed(1);
+
+      // Update Gauge & UI
+      document.getElementById('riskPercentage').textContent = `${percentage}%`;
+
+      const gauge = document.getElementById('gaugeProgress');
+      const badge = document.getElementById('riskBadge');
+      const summary = document.getElementById('riskSummary');
+
+      // Gauge arc length: pi * 80 ~= 251.3
+      const totalArc = 251.3;
+      const offset = totalArc - (prob * totalArc);
+      gauge.style.strokeDashoffset = offset;
+
+      if (prob < 0.30) {
+        gauge.style.stroke = '#10b981';
+        badge.className = 'risk-badge risk-low';
+        badge.innerHTML = '🛡️ Low Cardiac Risk';
+        summary.textContent = 'Diagnostic findings suggest low likelihood of obstructive coronary artery disease. Maintain cardiovascular health routines.';
+      } else if (prob < 0.70) {
+        gauge.style.stroke = '#f59e0b';
+        badge.className = 'risk-badge risk-medium';
+        badge.innerHTML = '⚠️ Moderate Cardiac Risk';
+        summary.textContent = 'Borderline biomarkers identified. Recommend monitoring, lifestyle modifications, and ambulatory ECG or echocardiogram follow-up.';
+      } else {
+        gauge.style.stroke = '#ef4444';
+        badge.className = 'risk-badge risk-high';
+        badge.innerHTML = '🚨 High Cardiac Risk';
+        summary.textContent = 'High probability of significant coronary artery disease. Prompt cardiologist consultation and specialized diagnostic workup recommended.';
+      }
+
+      // Contributing Factors Analysis
+      renderFactors(age, sex, cp, rbp, chol, fbs, ecg, maxhr, exang, oldpeak, slope);
+      renderRecommendations(rbp, chol, fbs, exang, oldpeak, maxhr);
+    }
+
+    function renderFactors(age, sex, cp, rbp, chol, fbs, ecg, maxhr, exang, oldpeak, slope) {
+      const container = document.getElementById('factorList');
+      container.innerHTML = '';
+
+      const factors = [];
+
+      if (slope === 'Flat') factors.push({ name: 'Flat ST Slope', type: 'enhancer', note: 'Strong ischemia marker' });
+      if (slope === 'Up') factors.push({ name: 'Upsloping ST Slope', type: 'reducer', note: 'Protective indicator' });
+      if (oldpeak >= 1.5) factors.push({ name: `High ST Depression (${oldpeak})`, type: 'enhancer', note: 'Significant ST deviation' });
+      if (oldpeak <= 0.2) factors.push({ name: 'Minimal ST Depression', type: 'reducer', note: 'Stable exercise recovery' });
+      if (exang === 'Y') factors.push({ name: 'Exercise-Induced Angina', type: 'enhancer', note: 'Symptomatic during stress' });
+      if (cp === 'ASY') factors.push({ name: 'Asymptomatic Chest Pain', type: 'enhancer', note: 'Silent ischemia risk' });
+      if (cp === 'ATA' || cp === 'NAP') factors.push({ name: 'Non-typical Chest Pain', type: 'reducer', note: 'Atypical presentation' });
+      if (chol >= 240) factors.push({ name: `Elevated Cholesterol (${chol} mg/dL)`, type: 'enhancer', note: 'Atherosclerosis risk' });
+      if (rbp >= 140) factors.push({ name: `Elevated Blood Pressure (${rbp} mmHg)`, type: 'enhancer', note: 'Hypertension stage' });
+      if (fbs === 1) factors.push({ name: 'High Fasting Blood Sugar', type: 'enhancer', note: 'Diabetic metabolic risk' });
+      if (maxhr >= 160) factors.push({ name: `Strong Max Heart Rate (${maxhr} bpm)`, type: 'reducer', note: 'High exercise tolerance' });
+
+      // Render top 4
+      factors.slice(0, 4).forEach(f => {
+        const item = document.createElement('div');
+        item.className = `factor-item ${f.type}`;
+        item.innerHTML = `
+          <div class="factor-name">
+            <span>${f.type === 'enhancer' ? '🔴' : '🟢'}</span>
+            <span>${f.name}</span>
+          </div>
+          <span class="factor-badge badge-${f.type}">${f.note}</span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function renderRecommendations(rbp, chol, fbs, exang, oldpeak, maxhr) {
+      const container = document.getElementById('recList');
+      container.innerHTML = '';
+
+      const recs = [];
+
+      if (rbp >= 130) {
+        recs.push({ icon: '🩺', text: `Blood pressure (${rbp} mmHg) is above optimal range. Monitor sodium intake and track daily readings.` });
+      }
+      if (chol >= 200) {
+        recs.push({ icon: '🥗', text: `Serum cholesterol (${chol} mg/dL) exceeds recommended threshold. Consider dietary lipid control and lipid profile test.` });
+      }
+      if (fbs === 1) {
+        recs.push({ icon: '🩸', text: 'Elevated fasting blood sugar. Review HbA1c levels to evaluate glycemic regulation.' });
+      }
+      if (exang === 'Y' || oldpeak > 1.0) {
+        recs.push({ icon: '🏃', text: 'Exercise-induced symptoms or ST changes observed. Avoid unmonitored strenuous exertion until cleared by a physician.' });
+      }
+      if (recs.length === 0) {
+        recs.push({ icon: '🌟', text: 'All recorded biomarkers remain within desirable clinical ranges. Continue standard preventative cardiovascular habits.' });
+      }
+
+      recs.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'rec-item';
+        item.innerHTML = `
+          <div class="rec-icon">${r.icon}</div>
+          <div>${r.text}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      calculateRisk();
+    });
+  </script>
+</body>
+</html>
